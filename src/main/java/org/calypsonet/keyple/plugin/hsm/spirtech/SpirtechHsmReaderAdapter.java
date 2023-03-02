@@ -122,7 +122,14 @@ final class SpirtechHsmReaderAdapter implements SpirtechHsmReader, ReaderSpi {
     if (logger.isTraceEnabled()) {
       logger.trace("Free reader channel request.");
     }
-    closePhysicalChannel();
+    if (csmChannel != null) {
+      try {
+        csmChannel.close();
+        isPhysicalChannelOpen = false;
+      } catch (CsmException e) {
+        throw new ReaderIOException(e.getMessage(), e);
+      }
+    }
   }
 
   /**
@@ -153,22 +160,15 @@ final class SpirtechHsmReaderAdapter implements SpirtechHsmReader, ReaderSpi {
   /**
    * {@inheritDoc}
    *
-   * <p>Close the CsmChannel if it exists.
+   * <p>Do not nothing since the physical channel closing is implicit through the CsmChannel
+   * de-allocation process.
    *
    * @since 2.0.0
    */
   @Override
-  public void closePhysicalChannel() throws ReaderIOException {
+  public void closePhysicalChannel() {
     if (logger.isTraceEnabled()) {
       logger.trace("Close physical channel requested.");
-    }
-    if (csmChannel != null) {
-      try {
-        csmChannel.close();
-        isPhysicalChannelOpen = false;
-      } catch (CsmException e) {
-        throw new ReaderIOException(e.getMessage(), e);
-      }
     }
   }
 
